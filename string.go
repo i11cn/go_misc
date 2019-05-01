@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	// StringConverter 把string类型的各种类型转换都组织起来
 	StringConverter string
 )
 
@@ -35,6 +36,7 @@ func (s StringConverter) to_float() (reflect.Value, error) {
 	}
 }
 
+// ToInt 字符串转换成 int
 func (s StringConverter) ToInt() (int, error) {
 	if i, err := strconv.ParseInt(string(s), 10, 32); err != nil {
 		return 0, err
@@ -43,6 +45,7 @@ func (s StringConverter) ToInt() (int, error) {
 	}
 }
 
+// ToInt 字符串转换成 int8
 func (s StringConverter) ToInt8() (int8, error) {
 	if i, err := strconv.ParseInt(string(s), 10, 8); err != nil {
 		return 0, err
@@ -51,6 +54,7 @@ func (s StringConverter) ToInt8() (int8, error) {
 	}
 }
 
+// ToInt 字符串转换成 int16
 func (s StringConverter) ToInt16() (int16, error) {
 	if i, err := strconv.ParseInt(string(s), 10, 16); err != nil {
 		return 0, err
@@ -59,6 +63,7 @@ func (s StringConverter) ToInt16() (int16, error) {
 	}
 }
 
+// ToInt 字符串转换成 int32
 func (s StringConverter) ToInt32() (int32, error) {
 	if i, err := strconv.ParseInt(string(s), 10, 32); err != nil {
 		return 0, err
@@ -67,6 +72,7 @@ func (s StringConverter) ToInt32() (int32, error) {
 	}
 }
 
+// ToInt 字符串转换成 int64
 func (s StringConverter) ToInt64() (int64, error) {
 	if i, err := strconv.ParseInt(string(s), 10, 64); err != nil {
 		return 0, err
@@ -75,6 +81,7 @@ func (s StringConverter) ToInt64() (int64, error) {
 	}
 }
 
+// ToInt 字符串转换成 uint
 func (s StringConverter) ToUint() (uint, error) {
 	if i, err := strconv.ParseUint(string(s), 10, 32); err != nil {
 		return 0, err
@@ -83,6 +90,7 @@ func (s StringConverter) ToUint() (uint, error) {
 	}
 }
 
+// ToInt 字符串转换成 uint8
 func (s StringConverter) ToUint8() (uint8, error) {
 	if i, err := strconv.ParseUint(string(s), 10, 8); err != nil {
 		return 0, err
@@ -91,6 +99,7 @@ func (s StringConverter) ToUint8() (uint8, error) {
 	}
 }
 
+// ToInt 字符串转换成 uint16
 func (s StringConverter) ToUint16() (uint16, error) {
 	if i, err := strconv.ParseUint(string(s), 10, 16); err != nil {
 		return 0, err
@@ -99,6 +108,7 @@ func (s StringConverter) ToUint16() (uint16, error) {
 	}
 }
 
+// ToInt 字符串转换成 uint32
 func (s StringConverter) ToUint32() (uint32, error) {
 	if i, err := strconv.ParseUint(string(s), 10, 32); err != nil {
 		return 0, err
@@ -107,6 +117,7 @@ func (s StringConverter) ToUint32() (uint32, error) {
 	}
 }
 
+// ToInt 字符串转换成 uint64
 func (s StringConverter) ToUint64() (uint64, error) {
 	if i, err := strconv.ParseUint(string(s), 10, 64); err != nil {
 		return 0, err
@@ -115,6 +126,7 @@ func (s StringConverter) ToUint64() (uint64, error) {
 	}
 }
 
+// ToInt 字符串转换成 float32
 func (s StringConverter) ToFloat32() (float32, error) {
 	if i, err := strconv.ParseFloat(string(s), 32); err != nil {
 		return 0, err
@@ -123,6 +135,7 @@ func (s StringConverter) ToFloat32() (float32, error) {
 	}
 }
 
+// ToInt 字符串转换成 float64
 func (s StringConverter) ToFloat64() (float64, error) {
 	if i, err := strconv.ParseFloat(string(s), 64); err != nil {
 		return 0, err
@@ -131,16 +144,18 @@ func (s StringConverter) ToFloat64() (float64, error) {
 	}
 }
 
+// ToInt 字符串转换成 bool，支持将true、yes、enable、y、t、1转换成true，false、no、disable、n、f、0转换成false，不区分大小写，其他数据一概不支持
 func (s StringConverter) ToBool() (bool, error) {
 	switch strings.ToUpper(string(s)) {
-	case "TRUE", "YES", "Y", "T", "1":
+	case "TRUE", "YES", "ENABLE", "Y", "T", "1":
 		return true, nil
-	case "FALSE", "NO", "N", "F", "0":
+	case "FALSE", "NO", "DISABLE", "N", "F", "0":
 		return false, nil
 	}
 	return false, fmt.Errorf("convert to bool failed")
 }
 
+// ToType 根据输入的类型，将string转换成对应类型的Value
 func (s StringConverter) ToType(t reflect.Type) (reflect.Value, error) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -192,6 +207,7 @@ func (s StringConverter) ToType(t reflect.Type) (reflect.Value, error) {
 	return ret, nil
 }
 
+// ToValue 根据输入参数v的类型，将string转换成对应的类型，并且赋值给v，该形式方便直接检查返回的错误值
 func (s StringConverter) ToValue(v interface{}) error {
 	if v == nil {
 		return fmt.Errorf("输入参数为 nil，不能用来接收数据")
