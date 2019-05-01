@@ -11,6 +11,30 @@ type (
 	StringConverter string
 )
 
+func (s StringConverter) to_int() (reflect.Value, error) {
+	if i, err := strconv.ParseInt(string(s), 10, 64); err != nil {
+		return reflect.ValueOf(i), err
+	} else {
+		return reflect.ValueOf(i), nil
+	}
+}
+
+func (s StringConverter) to_uint() (reflect.Value, error) {
+	if i, err := strconv.ParseUint(string(s), 10, 64); err != nil {
+		return reflect.ValueOf(i), err
+	} else {
+		return reflect.ValueOf(i), nil
+	}
+}
+
+func (s StringConverter) to_float() (reflect.Value, error) {
+	if f, err := strconv.ParseFloat(string(s), 64); err != nil {
+		return reflect.ValueOf(f), err
+	} else {
+		return reflect.ValueOf(f), nil
+	}
+}
+
 func (s StringConverter) ToInt() (int, error) {
 	if i, err := strconv.ParseInt(string(s), 10, 32); err != nil {
 		return 0, err
@@ -117,73 +141,70 @@ func (s StringConverter) ToBool() (bool, error) {
 	return false, fmt.Errorf("convert to bool failed")
 }
 
-func (s StringConverter) to_int(t reflect.Type, l int) (*reflect.Value, error) {
-	if i, err := strconv.ParseInt(string(s), 10, l); err != nil {
-		return nil, err
-	} else {
-
-		ret := reflect.Zero(t)
-		fmt.Println(ret.CanAddr())
-		fmt.Println(ret.CanSet())
-		fmt.Println(ret.Elem())
-		ret.Elem().SetInt(i)
-		return &ret, nil
+func (s StringConverter) ToType(t reflect.Type) (reflect.Value, error) {
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
 	}
-}
-
-func (s StringConverter) to_type(t reflect.Type) (*reflect.Value, error) {
-	var ret interface{}
+	ret := reflect.New(t).Elem()
 	var err error
 	switch t.String() {
 	case "string":
-		ret = string(s)
-	case "int":
-		ret, err = s.ToInt()
-	case "int8":
-		ret, err = s.ToInt8()
-	case "int16":
-		ret, err = s.ToInt16()
-	case "int32":
-		ret, err = s.ToInt32()
-	case "int64":
-		ret, err = s.ToInt64()
-	case "uint":
-		ret, err = s.ToUint()
-	case "uint8":
-		ret, err = s.ToUint8()
-	case "uint16":
-		ret, err = s.ToUint16()
-	case "uint32":
-		ret, err = s.ToUint32()
-	case "uint64":
-		ret, err = s.ToUint64()
-	case "float32":
-		ret, err = s.ToFloat32()
-	case "float64":
-		ret, err = s.ToFloat64()
+		ret = reflect.ValueOf(string(s))
+	case "int", "int8", "int16", "int32", "int64":
+		if use, err := s.to_int(); err != nil {
+			return ret, err
+		} else {
+			if ret.OverflowInt(use.Int()) {
+				return ret, fmt.Errorf("%s 超出 %s 类型的取值范围", string(s), t.String())
+			}
+			ret.SetInt(use.Int())
+		}
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		if use, err := s.to_uint(); err != nil {
+			return ret, err
+		} else {
+			if ret.OverflowUint(use.Uint()) {
+				return ret, fmt.Errorf("%s 超出 %s 类型的取值范围", string(s), t.String())
+			}
+			ret.SetUint(use.Uint())
+		}
+	case "float32", "float64":
+		if use, err := s.to_float(); err != nil {
+			return ret, err
+		} else {
+			if ret.OverflowFloat(use.Float()) {
+				return ret, fmt.Errorf("%s 超出 %s 类型的取值范围", string(s), t.String())
+			}
+			ret.SetFloat(use.Float())
+		}
 	case "bool":
-		ret, err = s.ToBool()
+		if use, err := s.ToBool(); err != nil {
+			return ret, err
+		} else {
+			ret.SetBool(use)
+		}
 	default:
-		return nil, fmt.Errorf("type %s not supported by string converterr", t.String())
+		return ret, fmt.Errorf("type %s not supported by string converterr", t.String())
 	}
 	if err != nil {
-		return nil, err
+		return ret, err
 	}
-	use := reflect.ValueOf(ret)
-	return &use, nil
+	return ret, nil
 }
 
-func (s StringConverter) ToType(t reflect.Type) (*reflect.Value, error) {
-	if t.Kind() == reflect.Ptr {
-		r, err := s.to_type(t.Elem())
-		if err != nil {
-			return nil, err
-		}
-		ret := reflect.Zero(t)
-		ret.Elem().Set(*r)
-		return &ret, nil
-		return s.to_type(t)
-	} else {
-		return s.to_type(t)
+func (s StringConverter) ToValue(v interface{}) error {
+	if v == nil {
+		return fmt.Errorf("输入参数为 nil，不能用来接收数据")
 	}
+	value := reflect.ValueOf(v)
+	if value.Kind() != reflect.Ptr {
+		return fmt.Errorf("不支持获取到类型 ", value.Type().String(), " , 必须为指针类型")
+	}
+	value = value.Elem()
+	use, err := s.ToType(value.Type())
+	if err != nil {
+		return err
+	}
+	value.Set(use)
+	return nil
 }
