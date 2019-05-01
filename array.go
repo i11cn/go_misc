@@ -1,8 +1,6 @@
 package misc
 
 import (
-	"io/ioutil"
-	"os"
 	"reflect"
 )
 
@@ -12,22 +10,6 @@ var (
 
 func init() {
 	MakeReverse(&ReverseString)
-}
-
-// ReadFileAll 很多地方需要用到[]byte的输入(例如json.Unmarshal等)，那么从文件读取数据也是很常用的方式，于是把从文件读取到[]byte写成一个函数
-//
-// 返回值中的[]byte和error绝不可能同时有效，也不可能同时为nil
-func ReadFileAll(file string) ([]byte, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	ret, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-	return ret, nil
 }
 
 func reverse(in []reflect.Value) []reflect.Value {
