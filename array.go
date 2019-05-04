@@ -43,7 +43,7 @@ func MakeReverse(fptr interface{}) {
 func DropEmpty(in []string) []string {
 	do := false
 	for _, s := range in {
-		if len(s) == 0 {
+		if s == "" {
 			do = true
 			break
 		}
@@ -53,7 +53,7 @@ func DropEmpty(in []string) []string {
 	}
 	ret := make([]string, 0, len(in))
 	for _, s := range in {
-		if len(s) > 0 {
+		if s != "" {
 			ret = append(ret, s)
 		}
 	}
